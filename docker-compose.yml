@@ -1,3 +1,4 @@
+# docker-compose.yml
 version: '3.8'
 
 services:
@@ -14,16 +15,16 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL","pg_isready -U bookmark_user -d bookmark_db"]
+      test: ["CMD-SHELL", "pg_isready -U bookmark_user -d bookmark_db"]
       interval: 10s
       timeout: 5s
       retries: 5
-  
+
   # Backend API
   backend:
     build:
       context: ./backend
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     container_name: bookmark_backend
     ports:
       - "8000:8000"
@@ -38,6 +39,17 @@ services:
       - ./backend/app:/app/app
     restart: unless-stopped
 
+  # Frontend (Next.js) - Will be added in Stage 4
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: bookmark_frontend
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   restart: unless-stopped
+
 volumes:
   postgres_data:
-      
