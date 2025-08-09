@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: bookmark_postgres
+    environment:
+      POSTGRES_DB: bookmark_db
+      POSTGRES_USER: bookmark_user
+      POSTGRES_PASSWORD: bookmark_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U bookmark_user -d bookmark_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: bookmark_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://bookmark_user:bookmark_password@postgres:5432/bookmark_db
+      - JWT_SECRET_KEY=your-secret-key-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+      
